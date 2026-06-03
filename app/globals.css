@@ -81,6 +81,10 @@ body {
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
+html {
+  font-size: 16px;
+}
+
 h1, h2, h3, h4, .cyber-font {
   font-family: 'Orbitron', sans-serif;
   letter-spacing: 0.05em;
@@ -169,6 +173,11 @@ h1, h2, h3, h4, .cyber-font {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(var(--border-rgb), 0.12);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
+.glass-panel {
+  padding: 18px;
+  border-radius: 12px;
 }
 
 .glass-panel-hover:hover {
@@ -265,6 +274,73 @@ h1, h2, h3, h4, .cyber-font {
   border-color: rgba(var(--color-accent-rgb), 0.4);
   color: rgb(var(--color-accent-rgb));
   text-shadow: 0 0 10px rgba(var(--color-accent-rgb), 0.2);
+}
+
+/* Improve touch targets for mobile */
+.btn-neon, .btn-glass {
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+/* Responsive utilities */
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.responsive-engine-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.custom-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 900px) {
+  html { font-size: 15px; }
+
+  .responsive-engine-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .glass-panel {
+    padding: 14px;
+    border-radius: 10px;
+  }
+
+  .btn-neon, .btn-glass {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  html { font-size: 14px; }
+
+  .glass-panel {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .timeline-container::before {
+    left: 12px;
+  }
 }
 
 /* Timeline Layout */

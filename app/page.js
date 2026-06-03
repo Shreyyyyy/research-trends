@@ -212,16 +212,13 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--background)', color: 'var(--foreground)' }}>
+    <div className="app-shell">
       
       {/* 1. Sidebar Navigation panel */}
       <aside 
-        className="glass-panel" 
+        className="glass-panel app-sidebar" 
         style={{ 
-          width: '280px', 
           borderRight: '1px solid rgba(var(--border-rgb), 0.15)', 
-          display: 'flex', 
-          flexDirection: 'column', 
           zIndex: 10,
           background: 'rgba(var(--bg-secondary-rgb), 0.7)'
         }}
@@ -324,10 +321,10 @@ export default function Home() {
       </aside>
 
       {/* 2. Main Workspace Dashboard */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflowY: 'auto' }} className="custom-scroll">
+      <main className="app-main custom-scroll">
         
         {/* Workspace banner header */}
-        <header style={{ height: '76px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', borderBottom: '1px solid rgba(var(--border-rgb), 0.12)', background: 'rgba(var(--bg-secondary-rgb), 0.25)', backdropFilter: 'blur(8px)', sticky: 'top', zIndex: 5 }}>
+        <header className="header-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', borderBottom: '1px solid rgba(var(--border-rgb), 0.12)', background: 'rgba(var(--bg-secondary-rgb), 0.25)', backdropFilter: 'blur(8px)', position: 'sticky', top: 0, zIndex: 5 }}>
           <div>
             {currentProject ? (
               <h2 style={{ fontSize: '16px', fontWeight: '700', color: 'rgb(var(--text-primary-rgb))' }} className="cyber-font">
@@ -422,7 +419,7 @@ export default function Home() {
                 <h4 style={{ fontSize: '11px', color: 'rgb(var(--text-secondary-rgb))', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }} className="cyber-font">
                   SUGGESTED DISCOVERIES
                 </h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="prompt-grid">
                   {samplePrompts.map((p, idx) => (
                     <div 
                       key={idx}
@@ -467,7 +464,7 @@ export default function Home() {
 
           {/* C. Results display panel */}
           {currentProject && !isSearching && (
-            <div style={{ maxWidth: '1040px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '30px' }}>
+            <div className="dashboard-body">
               
               {/* Tab Selector buttons */}
               <div 

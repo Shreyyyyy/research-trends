@@ -170,7 +170,7 @@ export default function ResearchEngine({ query, activeStep, papersDiscovered, gr
       {/* Background Canvas */}
       <canvas ref={canvasRef} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0 }} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', position: 'relative', zIndex: 1 }} className="responsive-engine-layout">
+      <div className="responsive-engine-layout" style={{ position: 'relative', zIndex: 1 }}>
         
         {/* Left Side: Steps Progress & Discovered Papers */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -343,7 +343,7 @@ export default function ResearchEngine({ query, activeStep, papersDiscovered, gr
           </div>
 
           {/* Stats Display */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+          <div className="stats-grid" style={{ gap: '12px' }}>
             <div className="glass-panel" style={{ padding: '12px', borderRadius: '10px', textAlign: 'center', background: 'rgba(var(--card-bg-rgb), 0.25)', border: '1px solid rgba(var(--border-rgb), 0.1)' }}>
               <div style={{ fontSize: '10px', color: 'rgb(var(--text-secondary-rgb))', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>PAPERS DETECTED</div>
               <div className="cyber-font" style={{ fontSize: '20px', fontWeight: 'bold', color: 'rgb(var(--color-primary-rgb))' }}>{stats.papers}</div>

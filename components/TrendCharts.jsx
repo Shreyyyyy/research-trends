@@ -50,7 +50,7 @@ export default function TrendCharts({ chartsData }) {
     : '';
 
   return (
-    <div className="animate-fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }} className="responsive-charts-layout">
+    <div className="animate-fade-in responsive-charts-layout">
       
       {/* 1. Topic Frequency Bar Chart */}
       <div className="glass-panel" style={{ padding: '20px', borderRadius: '16px', border: '1px solid rgba(var(--border-rgb), 0.15)', background: 'rgba(var(--card-bg-rgb), 0.3)' }}>
