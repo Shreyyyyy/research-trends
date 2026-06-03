@@ -1,7 +1,7 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Aether Research - Trend Explorer",
+  title: "Shrey-Nexus - Trend Explorer",
   description: "An AI-powered Research Trend Explorer. Discover breakthroughs, analyze publications, map topics, and chat with papers using RAG.",
 };
 

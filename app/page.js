@@ -229,8 +229,8 @@ export default function Home() {
             <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, rgb(var(--color-primary-rgb)) 0%, rgb(var(--color-accent-rgb)) 100%)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', color: '#050508' }}>
               <Sparkles size={16} />
             </div>
-            <span className="cyber-font" style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.1em' }}>
-              AETHER.AI
+            <span className="cyber-font" style={{ fontSize: '12px', fontWeight: 'bold', letterSpacing: '0.05em' }}>
+              Shrey-Nexus
             </span>
           </div>
 
