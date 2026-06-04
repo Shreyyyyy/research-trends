@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Search, ShieldAlert, Cpu, BarChart2, CheckCircle, Network, Layers, Sparkles } from 'lucide-react';
+import { Search, ShieldAlert, Cpu, BarChart2, CheckCircle, Network, Layers, Sparkles, AlertCircle } from 'lucide-react';
 
-export default function ResearchEngine({ query, activeStep, papersDiscovered, graphData, progress, streamingInsights }) {
+export default function ResearchEngine({ query, activeStep, papersDiscovered, graphData, progress, streamingInsights, searchScope }) {
   const canvasRef = useRef(null);
   const [stats, setStats] = useState({ papers: 0, sources: 0, confidence: 0 });
   const [nodes, setNodes] = useState([]);
@@ -182,6 +182,41 @@ export default function ResearchEngine({ query, activeStep, papersDiscovered, gr
               Query: <span style={{ color: 'rgb(var(--text-primary-rgb))', fontWeight: '500' }}>&quot;{query}&quot;</span>
             </p>
           </div>
+
+          {/* Search Scope Notification */}
+          {searchScope && searchScope.message && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              padding: '12px 14px',
+              borderRadius: '10px',
+              background: searchScope.beyondThirtyDays 
+                ? 'rgba(251, 146, 60, 0.1)' 
+                : 'rgba(34, 197, 94, 0.1)',
+              border: searchScope.beyondThirtyDays
+                ? '1px solid rgba(251, 146, 60, 0.3)'
+                : '1px solid rgba(34, 197, 94, 0.3)',
+              animation: 'fade-in 0.5s ease-in'
+            }}>
+              <AlertCircle 
+                size={18} 
+                style={{ 
+                  color: searchScope.beyondThirtyDays ? '#fb923c' : '#22c55e',
+                  flexShrink: 0 
+                }} 
+              />
+              <p style={{
+                fontSize: '13px',
+                color: searchScope.beyondThirtyDays 
+                  ? 'rgba(251, 146, 60, 0.9)' 
+                  : 'rgba(34, 197, 94, 0.9)',
+                margin: 0
+              }}>
+                {searchScope.message}
+              </p>
+            </div>
+          )}
 
           {/* Steps List */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

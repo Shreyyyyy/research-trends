@@ -31,6 +31,7 @@ export default function Home() {
   // Active Work tabs: 'report' | 'timeline' | 'charts' | 'papers' | 'chat'
   const [activeTab, setActiveTab] = useState('report');
   const [copyStatus, setCopyStatus] = useState(false);
+  const [searchScope, setSearchScope] = useState({ beyondThirtyDays: false, message: '' });
 
   // Initialize theme and load projects
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function Home() {
     setGraphData({ nodes: [], links: [] });
     setProgress({ count: 0, confidence: 0 });
     setActiveStep('searching');
+    setSearchScope({ beyondThirtyDays: false, message: '' });
 
     try {
       const response = await fetch('/api/research', {
@@ -113,6 +115,8 @@ export default function Home() {
 
               if (eventName === 'step') {
                 setActiveStep(data.status);
+              } else if (eventName === 'searchScope') {
+                setSearchScope(data);
               } else if (eventName === 'papers') {
                 setPapersDiscovered(data);
               } else if (eventName === 'progress') {
@@ -130,7 +134,8 @@ export default function Home() {
                   papers: data.papers,
                   timeline: data.timeline,
                   charts: data.charts,
-                  dateCreated: new Date().toLocaleDateString()
+                  dateCreated: new Date().toLocaleDateString(),
+                  beyondThirtyDays: searchScope.beyondThirtyDays || false
                 };
 
                 // Save project list
@@ -458,6 +463,7 @@ export default function Home() {
                 progress={progress}
                 graphData={graphData}
                 streamingInsights={streamingInsights}
+                searchScope={searchScope}
               />
             </div>
           )}
@@ -611,7 +617,11 @@ export default function Home() {
 
                 {/* 5. RAG Chat Panel */}
                 {activeTab === 'chat' && (
-                  <RagChat papers={currentProject.papers} query={currentProject.query} />
+                  <RagChat 
+                    papers={currentProject.papers} 
+                    query={currentProject.query}
+                    beyondThirtyDays={currentProject.beyondThirtyDays}
+                  />
                 )}
 
               </div>

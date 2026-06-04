@@ -3,11 +3,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, MessageSquare, Sparkles, AlertCircle } from 'lucide-react';
 
-export default function RagChat({ papers, query }) {
+export default function RagChat({ papers, query, beyondThirtyDays }) {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: `Hello! I have mapped and cataloged the research on **"${query || 'your topic'}"** from the past 30 days. You can ask me to analyze the bibliography, summarize findings, or detail research gaps.`
+      content: `Hello! I have mapped and cataloged the research on **"${query || 'your topic'}"** ${beyondThirtyDays ? 'from various time periods (beyond the last 30 days)' : 'from the past 30 days'}. You can ask me to analyze the bibliography, summarize findings, or detail research gaps.`
     }
   ]);
   const [input, setInput] = useState('');

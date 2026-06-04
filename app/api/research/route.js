@@ -40,12 +40,16 @@ export async function POST(req) {
       }
 
       try {
-        // Live Mode
+        // Live Mode with Two-Stage Search
+        let searchData;
+        let searchScope = 'last 30 days';
+        let beyondThirtyDays = false;
+
+        // Stage 1: Search within last 30 days
         sendEvent('step', { status: 'searching', message: 'Querying Tavily API for papers from last 30 days...' });
         await sleep(1000);
 
-        // 1. Tavily Search
-        const tavilyRes = await fetch('https://api.tavily.com/search', {
+        const tavilyRes30 = await fetch('https://api.tavily.com/search', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -58,11 +62,50 @@ export async function POST(req) {
           })
         });
 
-        if (!tavilyRes.ok) {
-          throw new Error(`Tavily API responded with status ${tavilyRes.status}`);
+        if (!tavilyRes30.ok) {
+          throw new Error(`Tavily API responded with status ${tavilyRes30.status}`);
         }
 
-        const searchData = await tavilyRes.json();
+        searchData = await tavilyRes30.json();
+
+        // Stage 2: If minimal results, expand search beyond 30 days
+        if (!searchData.results || searchData.results.length < 3) {
+          sendEvent('step', { status: 'searching', message: 'Limited results in last 30 days. Expanding search beyond 30 days...' });
+          await sleep(800);
+
+          const tavilyResBeyond = await fetch('https://api.tavily.com/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              api_key: process.env.TAVILY_API_KEY,
+              query: `${query} research paper breakthrough findings`,
+              search_depth: 'advanced',
+              include_answer: true,
+              max_results: 10
+            })
+          });
+
+          if (tavilyResBeyond.ok) {
+            searchData = await tavilyResBeyond.json();
+            beyondThirtyDays = true;
+            searchScope = 'beyond 30 days';
+          }
+        }
+
+        // Notify user about search scope
+        if (beyondThirtyDays) {
+          sendEvent('searchScope', { 
+            message: `No sufficient findings in the last 30 days. Showing results from beyond 30 days.`,
+            beyondThirtyDays: true,
+            scope: searchScope 
+          });
+        } else {
+          sendEvent('searchScope', { 
+            message: `Found findings within the last 30 days.`,
+            beyondThirtyDays: false,
+            scope: searchScope 
+          });
+        }
         
         sendEvent('step', { status: 'analyzing', message: 'Analyzing source reliability and extracting references...' });
         await sleep(1200);
@@ -70,7 +113,7 @@ export async function POST(req) {
         const papers = (searchData.results || []).map((res, i) => {
           const credibility = computeCredibilityScore(res.url);
           const mockAuthors = ["Dr. A. Vance", "Prof. L. Carter", "M. Nakamura et al.", "H. Sterling", "S. Al-Fayed"][i % 5];
-          const daysAgo = Math.floor(Math.random() * 28) + 1;
+          const daysAgo = beyondThirtyDays ? Math.floor(Math.random() * 365) + 1 : Math.floor(Math.random() * 28) + 1;
           const date = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
           
           return {
@@ -101,7 +144,7 @@ export async function POST(req) {
         // 2. Groq LLM API
         const context = papers.map(p => `[${p.title}] (Url: ${p.url}, Date: ${p.date}, Snippet: ${p.snippet})`).join('\n\n');
         
-        const systemPrompt = `You are an expert AI Research Assistant. Analyze the following research papers and articles from the last 30 days on the topic: "${query}".
+        const systemPrompt = `You are an expert AI Research Assistant. Analyze the following research papers and articles ${beyondThirtyDays ? 'from various time periods' : 'from the last 30 days'} on the topic: "${query}".
 Generate a structured report. Output the report in clean Markdown format with the following headings:
 # Executive Summary
 [Write a summary here]
@@ -199,8 +242,28 @@ Be precise, academic, and insightful.`;
 
 // Sandbox Mode generator to run when API keys are missing/invalid
 async function handleSandboxMode(query, sendEvent) {
-  sendEvent('step', { status: 'searching', message: 'Sandbox Mode: Searching papers in simulated database (Last 30 days)...' });
-  await sleep(1500);
+  // Simulate two-stage search
+  const beyondThirtyDays = Math.random() > 0.5; // Randomly decide for demo purposes
+  
+  if (beyondThirtyDays) {
+    sendEvent('step', { status: 'searching', message: 'Sandbox Mode: Searching papers in simulated database (Last 30 days)...' });
+    await sleep(1000);
+    sendEvent('step', { status: 'searching', message: 'Sandbox Mode: Limited results. Expanding search beyond 30 days...' });
+    await sleep(1000);
+    sendEvent('searchScope', { 
+      message: `No sufficient findings in the last 30 days. Showing results from beyond 30 days.`,
+      beyondThirtyDays: true,
+      scope: 'beyond 30 days'
+    });
+  } else {
+    sendEvent('step', { status: 'searching', message: 'Sandbox Mode: Searching papers in simulated database (Last 30 days)...' });
+    await sleep(1500);
+    sendEvent('searchScope', { 
+      message: `Found findings within the last 30 days.`,
+      beyondThirtyDays: false,
+      scope: 'last 30 days'
+    });
+  }
 
   // Generate mock papers
   const papers = [
@@ -209,7 +272,7 @@ async function handleSandboxMode(query, sendEvent) {
       title: `Emerging Paradigms in ${query}: A Comprehensive Survey`,
       authors: "Prof. Sarah Jenkins et al. (MIT)",
       url: "https://arxiv.org/abs/2605.12345",
-      date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(Date.now() - (beyondThirtyDays ? Math.floor(Math.random() * 365) : 5) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       credibility: 96,
       snippet: `This study reviews the foundational shifts in ${query} from the last year, introducing novel algorithmic configurations and scaling efficiencies that reduce error limits by 42%.`,
       topics: [query, "Algorithm Scaling", "Error Control"]
@@ -219,7 +282,7 @@ async function handleSandboxMode(query, sendEvent) {
       title: `Empirical Limits of ${query} in Large-Scale Infrastructure`,
       authors: "Dr. Kenji Tanaka (Stanford University)",
       url: "https://nature.com/articles/s26-0091",
-      date: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(Date.now() - (beyondThirtyDays ? Math.floor(Math.random() * 365) : 12) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       credibility: 92,
       snippet: `We present physical testbed results demonstrating the thermal limits and latency thresholds of ${query}. Crucially, we identify a critical phase boundary where traditional cooling fails.`,
       topics: [query, "Hardware Limits", "Thermal Control"]
@@ -229,7 +292,7 @@ async function handleSandboxMode(query, sendEvent) {
       title: `Hybrid Neural Integrations for Optimized ${query}`,
       authors: "Liam Sterling, Sophia Al-Fayed (Oxford Research)",
       url: "https://ieee.org/document/902811",
-      date: new Date(Date.now() - 19 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(Date.now() - (beyondThirtyDays ? Math.floor(Math.random() * 365) : 19) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       credibility: 88,
       snippet: `Integrating deep neural networks with ${query} models generates 10x faster inference. We release our weights and validation criteria indicating generalized transfer learning.`,
       topics: [query, "Neural Nets", "Optimization"]
@@ -239,7 +302,7 @@ async function handleSandboxMode(query, sendEvent) {
       title: `Security Vulnerabilities in Modern ${query} Implementations`,
       authors: "Alexandre Dupont et al. (INRIA)",
       url: "https://science.org/doi/10.1126/science-26",
-      date: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      date: new Date(Date.now() - (beyondThirtyDays ? Math.floor(Math.random() * 365) : 25) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       credibility: 95,
       snippet: `An investigation into side-channel leakage routes shows that standard cryptography is vulnerable during state extraction in ${query} nodes. We outline mitigations.`,
       topics: [query, "Security", "Cryptography"]
@@ -264,7 +327,7 @@ async function handleSandboxMode(query, sendEvent) {
 
   // Stream simulated insights
   const reportChunks = [
-    `# Executive Summary\n\nResearch into **${query}** over the past 30 days highlights a major surge in scaling efficiencies and hybrid architectures. `,
+    `# Executive Summary\n\nResearch into **${query}** ${beyondThirtyDays ? 'across various time periods' : 'over the past 30 days'} highlights a major surge in scaling efficiencies and hybrid architectures. `,
     `By combining traditional ${query} frameworks with deep learning inference accelerators, researchers have managed to bypass classical thermal and error-correction bottlenecks. `,
     `However, key issues regarding side-channel security and physical testbed scaling remain unresolved.\n\n`,
     `# Literature Review & Trends\n\nRecent publications reveal three primary lines of inquiry:\n`,
@@ -290,7 +353,8 @@ async function handleSandboxMode(query, sendEvent) {
     report: reportChunks.join(''),
     papers,
     timeline: generateTimeline(papers),
-    charts: generateChartData(papers)
+    charts: generateChartData(papers),
+    beyondThirtyDays: beyondThirtyDays
   };
 
   sendEvent('done', finalReport);
